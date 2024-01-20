@@ -1,0 +1,18 @@
+galaxy_info:
+  author: aliho
+  description: Setup and harding the servers
+
+  min_ansible_version: '2.1'
+
+  platforms:
+    - name: Debian
+
+  license: Apache
+
+  galaxy_tags:
+    - debian
+    - linux
+    - hardening
+    - iptables
+
+dependencies: []

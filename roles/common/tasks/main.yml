@@ -1,0 +1,30 @@
+---
+- name: Install iptables-persistent
+  ansible.builtin.apt:
+    name: iptables-persistent
+    state: present
+
+- name: Enable iptables service
+  ansible.builtin.service:
+    name: iptables
+    state: restarted
+
+- name: Iptables flush chains
+  ansible.builtin.iptables:
+    chain: '{{ item }}'
+    flush: true
+  loop: '{{ common_iptables_flush_chains }}'
+
+- name: Allow ports input chain
+  ansible.builtin.iptables:
+    chain: INPUT
+    protocol: '{{ item.protocol }}'
+    destination_port: '{{ item.port }}'
+    comment: '{{ item.comment }}'
+    jump: ACCEPT
+  loop: '{{ common_iptables_input_allow_ports }}'
+
+- name: Save iptables roles
+  ansible.builtin.command: netfilter-persistent save
+  register: save_result
+  changed_when: save_result.rc != 0

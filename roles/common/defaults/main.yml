@@ -1,0 +1,11 @@
+---
+common_iptables_flush_chains:
+  - INPUT
+  - OUTPUT
+  - FORWARD
+
+common_iptables_allow_ports:
+  - { port: 22, protocol: tcp, chain: INPUT, comment: 'ssh port' }
+  - { port: 80, protocol: tcp, chain: INPUT, comment: 'http port' }
+  - { port: 443, protocol: tcp, chain: INPUT, comment: 'https port' }
+  - { port: 22, protocol: tcp, chain: OUTPUT, comment: 'ssh port' }
