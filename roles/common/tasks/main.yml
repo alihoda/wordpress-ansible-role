@@ -17,12 +17,12 @@
 
 - name: Allow ports input chain
   ansible.builtin.iptables:
-    chain: INPUT
+    chain: '{{ item.chain }}'
     protocol: '{{ item.protocol }}'
     destination_port: '{{ item.port }}'
     comment: '{{ item.comment }}'
     jump: ACCEPT
-  loop: '{{ common_iptables_input_allow_ports }}'
+  loop: '{{ common_iptables_allow_ports }}'
 
 - name: Save iptables roles
   ansible.builtin.command: netfilter-persistent save
