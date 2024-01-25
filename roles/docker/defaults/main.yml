@@ -1,0 +1,42 @@
+---
+docker_conflict_packages:
+  - docker.io
+  - docker-doc
+  - docker-compose
+  - podman-docker
+  - containerd
+  - runc
+
+docker_depend_packages:
+  - curl
+  - gnupg
+  - ca-certificates
+
+docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-compose-plugin
+
+docker_users:
+  - vagrant
+
+docker_registry_files:
+  - { src: 'registry.compose.yml.j2', dest: 'docker-compose.yml' }
+  - { srs: 'registry.config.yml.j2', dest: 'config.yml' }
+
+docker_registry_users:
+  - name: userone
+    password: '1234'
+
+# registry config
+docker_registry_config_auth_enabled: false
+
+docker_registry_config_auth_htpasswd_realm: registry
+
+docker_registry_config_http_port: 5000
+
+docker_registry_config_proxy_remoteurl: https://registry-1.docker.io
+
+docker_registry_config_storage_fs_root_dir: /data

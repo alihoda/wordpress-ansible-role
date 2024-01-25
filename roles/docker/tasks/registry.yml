@@ -1,0 +1,54 @@
+---
+- name: Create registry directory
+  ansible.builtin.file:
+    path: '{{ docker_registry_project_dir }}/{{ item }}'
+    state: directory
+    recurse: true
+  loop: '{{ docker_registry_sub_dirs }}'
+
+- name: Create /etc/docker/certs.d directory
+  ansible.builtin.file:
+    path: '/etc/docker/certs.d/{{ docker_registry_domain }}'
+    recurse: true
+  when: docker_registry_self_signed
+
+- name: Copy SSL self-signed certifcate to /etc/docker/certs.d
+  ansible.builtin.copy:
+    src: 'files/{{ docker_registry_domain }}.crt'
+    dest: '/etc/docker/certs.d/{{ docker_registry_domain }}/{{ docker_registry_domain }}.crt'
+    mode: '0644'
+  when: docker_registry_self_signed
+
+- name: Add registry users
+  community.general.htpasswd:
+    path: '{{ docker_registry_project_dir }}/auth/.htpasswd'
+    mode: '0644'
+    name: '{{ item.name }}'
+    password: '{{ item.password }}'
+  loop: '{{ docker_registry_users }}'
+  when: docker_registry_config_auth_enabled
+
+- name: Copy registry compose and config files
+  ansible.builtin.template:
+    src: 'templates/{{ item.src }}'
+    dest: '{{ docker_registry_project_dir }}/{{ item.dest }}'
+    mode: '0644'
+  loop: '{{ docker_registry_files }}'
+
+- name: Running compose services
+  community.docker.docker_compose:
+    project_src: '{{ docker_registry_project_dir }}'
+  register: output
+
+- name: Verify that registry serivce is running
+  ansible.builtin.assert:
+    - 'output.services.registry_registry_1.state.running'
+
+- name: Change docker mirror registry
+  ansible.builtin.template:
+    src: templates/docker-daemon.json.j2
+    dest: /etc/docker/daemon.json
+    mode: '0644'
+  notify:
+    - Daemon reload
+    - Restart docker service

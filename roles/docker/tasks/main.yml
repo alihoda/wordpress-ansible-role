@@ -1,0 +1,18 @@
+---
+- name: Include install docker tasks
+  ansible.builtin.include_tasks: install.yml
+  args:
+    apply:
+      become: true
+  tags:
+    - install
+    - docker
+
+- name: Include registry tasks
+  ansible.builtin.include_tasks: registry.yml
+  args:
+    apply:
+      become: true
+  tags:
+    - registry
+    - docker

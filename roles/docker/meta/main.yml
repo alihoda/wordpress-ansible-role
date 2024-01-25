@@ -1,0 +1,19 @@
+galaxy_info:
+  author: aliho
+  description: Install docker and configure a registry
+
+  license: MIT
+
+  min_ansible_version: '2.1'
+
+  platforms:
+    - name: Debian
+      versions:
+        - all
+
+  galaxy_tags:
+    - docker
+    - install
+    - registry
+
+dependencies: []
