@@ -5,11 +5,6 @@
     state: absent
     purge: true
 
-# - name: Remove docker lib directory
-#   ansible.builtin.file:
-#     path: /var/lib/docker
-#     state: absent
-
 - name: Install dependent packages
   ansible.builtin.apt:
     name: '{{ docker_depend_packages }}'

@@ -1,0 +1,49 @@
+---
+- name: Create a new ext4 primary partition
+  community.general.parted:
+    device: '{{ docker_data_disk }}'
+    number: 1
+    state: present
+    fs_type: ext4
+
+- name: Create /mnt/data directory
+  ansible.builtin.file:
+    path: /mnt/data
+    state: directory
+    mode: '0644'
+
+- name: Format the /dev/sdb1 to ext4
+  community.general.filesystem:
+    dev: '{{ docker_data_disk }}1'
+    fstype: ext4
+
+- name: Mount extra disk to /data dir
+  ansible.posix.mount:
+    path: /mnt/data
+    src: '{{ docker_data_disk }}1'
+    fstype: ext4
+    state: mounted
+    opts: defaults
+
+- name: Stop docker service
+  ansible.builtin.service:
+    name: docker
+    state: stopped
+
+- name: Update docker daemon.json file
+  ansible.builtin.template:
+    src: templates/docker-daemon.json.j2
+    dest: /etc/docker/daemon.json
+    mode: '0644'
+
+- name: Copy docker root dir
+  ansible.builtin.command: 'cp -r /var/lib/docker {{ docker_daemon_data_root_dir }}/'
+  notify:
+    - Daemon reload
+    - Restart docker service
+  register: output
+
+- name: Remove old docker root directory
+  ansible.builtin.file:
+    path: /var/lib/docker
+    state: absent

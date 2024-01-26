@@ -1,4 +1,5 @@
 {
+  "data-root": "{{ docker_daemon_data_root_dir }}/docker",
   "registry-mirrors": {{ docker_daemon_registry_mirrors | tojson }},
   "log-driver": {{ docker_daemon_log_driver | tojson }},
   "log-opts": {{ docker_daemon_log_opts | tojson(indent=2) }}

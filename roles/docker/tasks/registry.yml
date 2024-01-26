@@ -52,12 +52,3 @@
   vars:
     ansible_python_interpreter: '{{ base_dir }}/env/bin/python3'
   register: output
-
-- name: Update docker daemon.json file
-  ansible.builtin.template:
-    src: templates/docker-daemon.json.j2
-    dest: /etc/docker/daemon.json
-    mode: '0644'
-  notify:
-    - Daemon reload
-    - Restart docker service
