@@ -4,15 +4,15 @@
   args:
     apply:
       become: true
-  tags:
-    - install
-    - docker
+      tags:
+        - install
 
 - name: Include registry tasks
   ansible.builtin.include_tasks: registry.yml
   args:
     apply:
       become: true
+      tags:
+        - registry
   tags:
     - registry
-    - docker

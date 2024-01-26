@@ -10,16 +10,16 @@ storage:
   cache:
     blobdescriptor: inmemory
   filesystem:
-    rootdirectory: '{{ docker_registry_config_storage_fs_root_dir }}'
+    rootdirectory: {{ docker_registry_config_storage_fs_root_dir }}
 http:
-  addr: ':{{ docker_registry_config_http_port }}'
+  addr: :{{ docker_registry_config_http_port }}
   headers:
     X-Content-Type-Options: [nosniff]
 {% if docker_registry_config_auth_enabled %}
 auth:
   htpasswd:
-    realm: '{{ docker_registry_config_auth_htpasswd_realm }}'
+    realm: {{ docker_registry_config_auth_htpasswd_realm }}
     path: /auth/.htpasswd
 {% endif %}
 proxy:
-  remoteurl: '{{ docker_registry_config_proxy_remoteurl }}'
+  remoteurl: {{ docker_registry_config_proxy_remoteurl }}

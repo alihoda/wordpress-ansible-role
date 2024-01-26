@@ -5,10 +5,10 @@
     state: absent
     purge: true
 
-- name: Remove docker lib directory
-  ansible.builtin.file:
-    path: /var/lib/docker
-    state: absent
+# - name: Remove docker lib directory
+#   ansible.builtin.file:
+#     path: /var/lib/docker
+#     state: absent
 
 - name: Install dependent packages
   ansible.builtin.apt:
@@ -23,11 +23,13 @@
 
 - name: Add GPG key
   ansible.builtin.shell:
-  executable: /bin/bash
-  cmd: |
-    set -o pipefail
-    curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg chmod a+r /etc/apt/keyrings/docker.gpg
+    executable: /bin/bash
+    cmd: |
+      set -o pipefail
+      curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor --batch --yes -o /etc/apt/keyrings/docker.gpg
+      chmod a+r /etc/apt/keyrings/docker.gpg
   register: output
+  changed_when: output.rc != 0
 
 - name: Add repository to sources
   ansible.builtin.shell: |
@@ -41,12 +43,14 @@
     name: '{{ docker_packages }}'
     state: present
     update_cache: true
+    # cache_valid_time: 3600
   notify:
     - Enable docker service
     - Restart docker service
 
 - name: Add users to docker group
   ansible.builtin.user:
-    name: '{{ docker_users }}'
+    name: '{{ item }}'
     groups: docker
     append: true
+  loop: '{{ docker_users }}'

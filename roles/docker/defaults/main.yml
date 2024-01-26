@@ -19,12 +19,26 @@ docker_packages:
   - docker-buildx-plugin
   - docker-compose-plugin
 
+docker_pip_packages:
+  - docker
+
 docker_users:
   - vagrant
 
-docker_registry_files:
-  - { src: 'registry.compose.yml.j2', dest: 'docker-compose.yml' }
-  - { srs: 'registry.config.yml.j2', dest: 'config.yml' }
+docker_registry_base_dir: '{{ base_dir }}/registry'
+
+docker_registry_sub_dirs:
+  - certs
+  - auth
+  - data
+
+docker_daemon_log_driver: json-file
+
+docker_daemon_log_opts:
+  max-size: 10m
+  max-file: '3'
+
+docker_daemon_registry_mirrors: ['https://{{ registry_domain }}']
 
 docker_registry_users:
   - name: userone

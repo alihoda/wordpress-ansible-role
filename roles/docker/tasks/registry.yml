@@ -1,27 +1,27 @@
 ---
-- name: Create registry directory
+- name: Create registry sub directories
   ansible.builtin.file:
-    path: '{{ docker_registry_project_dir }}/{{ item }}'
+    path: '{{ docker_registry_base_dir }}/{{ item }}'
     state: directory
     recurse: true
   loop: '{{ docker_registry_sub_dirs }}'
 
 - name: Create /etc/docker/certs.d directory
   ansible.builtin.file:
-    path: '/etc/docker/certs.d/{{ docker_registry_domain }}'
+    path: '/etc/docker/certs.d/{{ registry_domain }}'
     recurse: true
-  when: docker_registry_self_signed
+  when: self_signed_certificate
 
 - name: Copy SSL self-signed certifcate to /etc/docker/certs.d
   ansible.builtin.copy:
-    src: 'files/{{ docker_registry_domain }}.crt'
-    dest: '/etc/docker/certs.d/{{ docker_registry_domain }}/{{ docker_registry_domain }}.crt'
+    src: 'files/{{ base_domain }}.crt'
+    dest: '/etc/docker/certs.d/{{ registry_domain }}/{{ registry_domain }}.crt'
     mode: '0644'
-  when: docker_registry_self_signed
+  when: self_signed_certificate
 
 - name: Add registry users
   community.general.htpasswd:
-    path: '{{ docker_registry_project_dir }}/auth/.htpasswd'
+    path: '{{ docker_registry_base_dir }}/auth/.htpasswd'
     mode: '0644'
     name: '{{ item.name }}'
     password: '{{ item.password }}'
@@ -30,21 +30,30 @@
 
 - name: Copy registry compose and config files
   ansible.builtin.template:
-    src: 'templates/{{ item.src }}'
-    dest: '{{ docker_registry_project_dir }}/{{ item.dest }}'
+    src: '{{ item }}'
+    dest: "{{ docker_registry_base_dir }}/{{ item | basename | regex_replace('^registry\\.(.*)\\.j2$', '\\1') }}"
     mode: '0644'
-  loop: '{{ docker_registry_files }}'
+  with_fileglob: 'templates/registry.*.yml.j2'
 
-- name: Running compose services
-  community.docker.docker_compose:
-    project_src: '{{ docker_registry_project_dir }}'
+- name: Install pip packages
+  ansible.builtin.pip:
+    name: '{{ docker_pip_packages }}'
+    virtualenv: '{{ base_dir }}/env'
+
+- name: Create reg network
+  community.docker.docker_network:
+    name: reg
+  vars:
+    ansible_python_interpreter: '{{ base_dir }}/env/bin/python3'
+
+- name: Running registry compose file
+  community.docker.docker_compose_v2:
+    project_src: '{{ docker_registry_base_dir }}'
+  vars:
+    ansible_python_interpreter: '{{ base_dir }}/env/bin/python3'
   register: output
 
-- name: Verify that registry serivce is running
-  ansible.builtin.assert:
-    - 'output.services.registry_registry_1.state.running'
-
-- name: Change docker mirror registry
+- name: Update docker daemon.json file
   ansible.builtin.template:
     src: templates/docker-daemon.json.j2
     dest: /etc/docker/daemon.json
