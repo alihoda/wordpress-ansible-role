@@ -13,11 +13,14 @@
       tags: [common]
     - role: docker
       tags: [docker]
+    - role: wordpress
+      tags: [wordpress]
     - role: nginx
       tags: [nginx]
 
   vars:
     base_domain: test.dev
     registry_domain: 'reg.{{ base_domain }}'
+    wordpress_domain: 'wp.{{ base_domain }}'
     base_dir: /srv
     self_signed_certificate: true

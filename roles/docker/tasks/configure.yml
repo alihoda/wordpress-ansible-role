@@ -42,6 +42,7 @@
     - Daemon reload
     - Restart docker service
   register: output
+  changed_when: output.rc != 0
 
 - name: Remove old docker root directory
   ansible.builtin.file:

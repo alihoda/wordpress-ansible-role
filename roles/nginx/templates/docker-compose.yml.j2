@@ -15,9 +15,13 @@ services:
       - {{ nginx_base_dir }}/certs:/etc/nginx/certs:ro
       - {{ nginx_base_dir }}/conf:/etc/nginx/conf.d:ro
       - {{ nginx_base_dir }}/snippets:/etc/nginx/snippets:ro
+      - {{ wordpress_base_dir}}/html:/var/www/html
     networks:
       - reg
+      - web
 
 networks:
   reg:
+    external: true
+  web:
     external: true

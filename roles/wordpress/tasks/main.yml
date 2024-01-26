@@ -1,0 +1,26 @@
+---
+- name: Create sub directories
+  ansible.builtin.file:
+    path: '{{ wordpress_base_dir }}/{{ item }}'
+    state: directory
+    recurse: true
+  loop: '{{ wordpress_sub_dirs }}'
+
+- name: Create web network
+  community.docker.docker_network:
+    name: web
+  vars:
+    ansible_python_interpreter: '{{ base_dir }}/env/bin/python3'
+
+- name: Copy compose file
+  ansible.builtin.template:
+    src: templates/docker-compose.yml.j2
+    dest: '{{ wordpress_base_dir }}/docker-compose.yml'
+    mode: '0644'
+
+- name: Running compose services
+  community.docker.docker_compose_v2:
+    project_src: '{{ wordpress_base_dir }}'
+  vars:
+    ansible_python_interpreter: '{{ base_dir }}/env/bin/python3'
+  register: output

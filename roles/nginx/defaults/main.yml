@@ -6,4 +6,4 @@ nginx_sub_dirs: ['certs', 'snippets', 'conf']
 nginx_registry_client_max_body_size: 1024m
 
 nginx_private_hosts:
-  - { ip: '{{ hostvars["test.dev"].ansible_host }}', domains: '{{ registry_domain }}' }
+  - { ip: '{{ hostvars["test.dev"].ansible_host }}', domains: '{{ registry_domain }} {{ wordpress_domain }}' }
