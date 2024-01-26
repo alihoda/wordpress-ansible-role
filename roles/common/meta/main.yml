@@ -7,7 +7,7 @@ galaxy_info:
   platforms:
     - name: Debian
 
-  license: Apache
+  license: MIT
 
   galaxy_tags:
     - debian
