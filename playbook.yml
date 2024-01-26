@@ -1,13 +1,23 @@
 ---
 - name: Setup servers
-  hosts: servers
+  hosts: webservers
   become: true
   pre_tasks:
     - name: Update repositories
       ansible.builtin.apt:
         update_cache: true
-        cache_valid_time: 86400 # one day
+        # cache_valid_time: 3600
 
   roles:
-    - common
-    - docker
+    - role: common
+      tags: [common]
+    - role: docker
+      tags: [docker]
+    - role: nginx
+      tags: [nginx]
+
+  vars:
+    base_domain: test.dev
+    registry_domain: 'reg.{{ base_domain }}'
+    base_dir: /srv
+    self_signed_certificate: true

@@ -1,0 +1,49 @@
+---
+- name: Create nginx directories
+  ansible.builtin.file:
+    path: '{{ nginx_base_dir }}/{{ item }}'
+    state: directory
+    recurse: true
+  loop: '{{ nginx_sub_dirs }}'
+
+- name: Copy conf files
+  ansible.builtin.template:
+    src: '{{ item }}'
+    dest: "{{ nginx_base_dir }}/conf/{{ item | basename | regex_replace('\\.j2', '') }}"
+    mode: '0644'
+  with_fileglob: 'templates/*.conf.j2'
+
+- name: Copy ssl cert and key files
+  ansible.builtin.copy:
+    src: '{{ item }}'
+    dest: '{{ nginx_base_dir }}/certs/{{ item | basename }}'
+    mode: '0644'
+  loop:
+    - 'files/{{ base_domain }}.crt'
+    - 'files/{{ base_domain }}.key'
+
+- name: Copy snippets files
+  ansible.builtin.template:
+    src: templates/ssl-certs-snippets.j2
+    dest: '{{ nginx_base_dir }}/snippets/ssl-certs.conf'
+    mode: '0644'
+
+- name: Copy compose file
+  ansible.builtin.template:
+    src: templates/docker-compose.yml.j2
+    dest: '{{ nginx_base_dir }}/docker-compose.yml'
+    mode: '0644'
+
+- name: Running compose services
+  community.docker.docker_compose_v2:
+    project_src: '{{ nginx_base_dir }}'
+  vars:
+    ansible_python_interpreter: '{{ base_dir }}/env/bin/python3'
+  register: output
+
+- name: Add entries to /etc/hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    line: '{{ item.ip }} {{ item.domains }}'
+  loop: '{{ nginx_private_hosts }}'
+  when: self_signed_certificate
